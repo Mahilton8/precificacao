@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Precificação | Máxima Mentoria Empresarial</title>
+<style>
+  :root{
+    --bg:#0f1420;
+    --panel:#161d2e;
+    --panel2:#1c2438;
+    --border:#2a3350;
+    --gold:#d4af37;
+    --gold2:#f0d370;
+    --text:#eef1f8;
+    --muted:#8a93ab;
+    --green:#3fa96b;
+    --green-bg:#1c3327;
+    --red:#e0554f;
+    --red-bg:#3a1f1f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:radial-gradient(circle at top, #182035 0%, var(--bg) 60%);
+    color:var(--text);
+    padding:24px 14px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  header{text-align:center;margin-bottom:24px;}
+  header .logo-img{height:56px;width:auto;margin-bottom:10px;}
+  header .tag{
+    font-size:11px;letter-spacing:3px;color:var(--gold);
+    text-transform:uppercase;font-weight:600;
+  }
+  header h1{
+    margin:6px 0 4px;font-size:23px;font-weight:800;
+    background:linear-gradient(90deg,var(--gold2),var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  header p{margin:0;color:var(--muted);font-size:12.5px;}
+
+  .tabs{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:20px;padding:10px;margin-bottom:20px;
+    box-shadow:0 8px 24px -12px rgba(0,0,0,.5);
+  }
+  .tab-btn{
+    padding:14px 10px;border:1px solid transparent;background:var(--panel2);color:var(--muted);
+    font-size:12.5px;font-weight:600;border-radius:14px;cursor:pointer;
+    transition:.18s;line-height:1.35;
+  }
+  .tab-btn:hover{border-color:var(--border);color:var(--text);}
+  .tab-btn.active{
+    background:linear-gradient(135deg,var(--gold2),var(--gold));color:#1a1406;
+    box-shadow:0 6px 16px -6px rgba(212,175,55,.55);border-color:transparent;
+  }
+  .tabs.sub{
+    grid-template-columns:1fr 1fr;padding:6px;border-radius:14px;gap:6px;
+    box-shadow:none;margin-bottom:0;
+  }
+  .tabs.sub .tab-btn{border-radius:10px;padding:10px 8px;}
+
+  .card{
+    background:var(--panel);border:1px solid var(--border);border-radius:18px;
+    padding:22px;margin-bottom:16px;box-shadow:0 6px 20px -14px rgba(0,0,0,.6);
+  }
+  .card h2{
+    font-size:14.5px;margin:0 0 16px;color:var(--gold2);
+    display:flex;align-items:center;gap:8px;font-weight:700;
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;font-size:11.5px;color:var(--muted);margin-bottom:6px;
+    text-transform:uppercase;letter-spacing:.5px;font-weight:600;
+  }
+  .input-row{position:relative;}
+  .input-row .prefix{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    color:var(--muted);font-size:14px;pointer-events:none;
+  }
+  .input-row.pct .prefix{left:auto;right:16px;}
+  input[type=number]{
+    width:100%;background:var(--panel2);border:1px solid var(--border);
+    color:var(--text);border-radius:12px;padding:12px 14px 12px 38px;
+    font-size:16px;font-weight:600;outline:none;transition:.15s;
+  }
+  .input-row.pct input{padding:12px 40px 12px 14px;}
+  input[type=number]:focus{border-color:var(--gold);}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+
+  .results{margin-top:18px;border-top:1px dashed var(--border);padding-top:16px;}
+  .res-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0;font-size:13.5px;color:var(--muted);
+  }
+  .res-row span.val{font-size:15px;font-weight:700;color:var(--text);}
+  .res-row.hl{
+    background:var(--panel2);margin:6px -8px;padding:12px 12px;border-radius:12px;
+  }
+  .res-row.hl span.val{color:var(--gold2);font-size:20px;}
+  .res-row.net{
+    background:var(--green-bg);margin:6px -8px;padding:12px 12px;border-radius:12px;
+    color:#8fd1a8;
+  }
+  .res-row.net span.val{color:var(--green);font-size:18px;}
+  .badge{
+    display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;
+  }
+  .badge.good{background:var(--green-bg);color:var(--green);}
+  .badge.bad{background:var(--red-bg);color:var(--red);}
+
+  .note{
+    font-size:11.5px;color:var(--muted);background:var(--panel2);
+    border-left:3px solid var(--gold);padding:10px 12px;border-radius:0 10px 10px 0;
+    margin-top:10px;line-height:1.5;
+  }
+  .subhead{
+    font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gold);
+    font-weight:700;margin:20px 0 12px;padding-top:16px;border-top:1px dashed var(--border);
+    display:flex;align-items:center;gap:6px;
+  }
+  .subhead .opt{
+    font-size:9.5px;color:var(--muted);text-transform:none;letter-spacing:0;
+    font-weight:500;background:var(--panel2);padding:2px 8px;border-radius:20px;
+  }
+  footer{text-align:center;color:var(--muted);font-size:10.5px;margin-top:24px;}
+  .hidden{display:none;}
+
+  .ing-card{
+    background:var(--panel2);border:1px solid var(--border);border-radius:16px;
+    padding:16px;margin-bottom:12px;position:relative;
+  }
+  .ing-card .ing-head{
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+  }
+  .ing-card .ing-head span{
+    font-size:11px;color:var(--gold2);text-transform:uppercase;letter-spacing:.5px;font-weight:700;
+  }
+  .ing-card input[type=text]{
+    width:100%;background:var(--panel);border:1px solid var(--border);
+    color:var(--text);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;
+    margin-bottom:10px;font-weight:600;
+  }
+  .ing-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .ing-grid.ing-grid-3{grid-template-columns:1fr 1fr;}
+  .ing-grid .gf label{
+    display:block;font-size:10px;color:var(--muted);margin-bottom:5px;
+    text-transform:uppercase;letter-spacing:.3px;font-weight:600;
+  }
+  .ing-grid input[type=number],.ing-grid input[type=text],.ing-grid select{
+    width:100%;background:var(--panel);border:1px solid var(--border);
+    color:var(--text);border-radius:10px;padding:9px 10px;font-size:13.5px;outline:none;font-weight:600;
+  }
+  .ing-grid select{appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a93ab' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat;background-position:right 10px center;background-size:16px;padding-right:30px;
+  }
+  .ing-grid input:disabled{opacity:.6;color:var(--gold2);}
+  .ing-sub-line{
+    display:flex;justify-content:space-between;align-items:center;
+    border-top:1px dashed var(--border);padding-top:9px;font-size:12px;color:var(--muted);
+  }
+  .ing-sub-line .val{font-size:14px;font-weight:700;color:var(--gold2);}
+  .rm-btn{
+    position:absolute;top:14px;right:14px;
+    background:var(--red-bg);color:var(--red);border:1px solid var(--red);
+    width:24px;height:24px;border-radius:8px;font-size:13px;font-weight:700;
+    cursor:pointer;line-height:1;
+  }
+  .add-btn{
+    width:100%;padding:12px;background:var(--panel2);border:1.5px dashed var(--gold);
+    color:var(--gold2);border-radius:14px;font-size:12.5px;font-weight:600;cursor:pointer;
+    margin-bottom:6px;
+  }
+  .subtotal-line{
+    display:flex;justify-content:space-between;padding:10px 4px;
+    border-top:1px solid var(--border);font-size:13px;color:var(--muted);
+  }
+  .subtotal-line span.val{font-weight:700;color:var(--text);font-size:15px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img class="logo-img" src="data:image/jpeg;base64,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" alt="Máxima Mentoria Empresarial">
+    <div class="tag">Máxima Mentoria Empresarial</div>
+    <h1>Calculadora de Precificação</h1>
+    <p>Margem de lucro, markup e preço de venda</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="btn-c1" onclick="showTab(1)">Cenário 1<br>Custo + Venda → Margem</button>
+    <button class="tab-btn" id="btn-c2" onclick="showTab(2)">Cenário 2<br>Custo + Margem → Venda</button>
+    <button class="tab-btn" id="btn-c3" onclick="showTab(3)">Cenário 3<br>Custo + Markup → Venda</button>
+    <button class="tab-btn" id="btn-c4" onclick="showTab(4)">Cenário 4<br>Formação de CMV</button>
+  </div>
+
+  <!-- CENÁRIO 1 -->
+  <div id="tab1">
+    <div class="card">
+      <h2>📋 Dados da Compra</h2>
+      <div class="field">
+        <label>Custo (preço de compra)</label>
+        <div class="input-row"><span class="prefix">R$</span>
+          <input type="number" id="c1_custo" step="0.01" placeholder="Digite aqui" oninput="calc1()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Preço de venda</label>
+        <div class="input-row"><span class="prefix">R$</span>
+          <input type="number" id="c1_venda" step="0.01" placeholder="Digite aqui" oninput="calc1()">
+        </div>
+      </div>
+
+      <div class="subhead">Despesas do período <span class="opt">opcional</span></div>
+      <div class="field">
+        <label>Como deseja informar a despesa fixa?</label>
+        <div class="tabs sub">
+          <button class="tab-btn active" id="btn-c1fixomodo-rs" onclick="setC1FixoModo('rs')">Valor fixo<br>(R$)</button>
+          <button class="tab-btn" id="btn-c1fixomodo-pct" onclick="setC1FixoModo('pct')">Percentual<br>(% sobre venda)</button>
+        </div>
+      </div>
+      <div class="field" id="c1_fixo_field_rs">
+        <label>Despesa fixa rateada (R$ por unidade)</label>
+        <div class="input-row"><span class="prefix">R$</span>
+          <input type="number" id="c1_fixo" step="0.01" placeholder="Digite aqui" oninput="calc1()">
+        </div>
+      </div>
+      <div class="field hidden" id="c1_fixo_field_pct">
+        <label>Despesa fixa (% sobre o preço de venda)</label>
+        <div class="input-row pct">
+          <input type="number" id="c1_fixo_pct" step="0.1" placeholder="Digite aqui" oninput="calc1()"><span class="prefix">%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Despesas variáveis (% sobre a venda)</label>
+        <div class="input-row pct">
+          <input type="number" id="c1_var" step="0.1" placeholder="Digite aqui" oninput="calc1()"><span class="prefix">%</span>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="res-row"><span>Lucro bruto (R$)</span><span class="val" id="c1_lucro">–</span></div>
+        <div class="res-row hl"><span>Margem bruta (% sobre venda)</span><span class="val" id="c1_margem">–</span></div>
+        <div class="res-row"><span>Markup (% sobre custo)</span><span class="val" id="c1_markup">–</span></div>
+        <div class="res-row"><span>Multiplicador (fator sobre custo)</span><span class="val" id="c1_fator">–</span></div>
+        <div class="res-row net"><span>Lucro líquido real (após despesas)</span><span class="val" id="c1_lucroliq">–</span></div>
+        <div class="res-row net"><span>Margem líquida real (% sobre venda)</span><span class="val" id="c1_margemliq">–</span></div>
+      </div>
+      <div class="note">
+        Margem bruta = Lucro ÷ Preço de Venda. Markup = Lucro ÷ Custo. Se despesas fixas e variáveis forem informadas, o lucro líquido real desconta ambas do lucro bruto — é o número que efetivamente sobra no caixa.
+      </div>
+    </div>
+  </div>
+
+  <!-- CENÁRIO 2 -->
+  <div id="tab2" class="hidden">
+    <div class="card">
+      <h2>🎯 Definir Preço de Venda</h2>
+      <div class="field">
+        <label>Custo (preço de compra)</label>
+        <div class="input-row"><span class="prefix">R$</span>
+          <input type="number" id="c2_custo" step="0.01" placeholder="Digite aqui" oninput="calc2()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Margem de lucro desejada (% sobre a venda)</label>
+        <div class="input-row pct">
+          <input type="number" id="c2_margem" step="0.1" placeholder="Digite aqui" oninput="calc2()"><span class="prefix">%</span>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="res-row hl"><span>Preço de venda sugerido</span><span class="val" id="c2_venda">–</span></div>
+        <div class="res-row"><span>Lucro bruto (R$)</span><span class="val" id="c2_lucro">–</span></div>
+        <div class="res-row"><span>Markup equivalente (% sobre custo)</span><span class="val" id="c2_markup">–</span></div>
+        <div class="res-row" id="c2_alerta_row" style="display:none;"><span>Situação</span><span class="val"><span class="badge bad" id="c2_alerta"></span></span></div>
+      </div>
+      <div class="note">
+        Preço de Venda = Custo ÷ (1 − Margem). Fórmula usada para partir de um custo e de uma margem-alvo e chegar no preço final de tabela.
+      </div>
+    </div>
+  </div>
+
+  <!-- CENÁRIO 3 -->
+  <div id="tab3" class="hidden">
+    <div class="card">
+      <h2>📈 Definir Venda a partir do Markup</h2>
+      <div class="field">
+        <label>Custo (preço de compra)</label>
+        <div class="input-row"><span class="prefix">R$</span>
+          <input type="number" id="c3_custo" step="0.01" placeholder="Digite aqui" oninput="calc3()">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Como deseja informar o markup?</label>
+        <div class="tabs sub">
+          <button class="tab-btn active" id="btn-c3modo-pct" onclick="setC3Modo('pct')">Por percentual<br>(ex.: 108%)</button>
+          <button class="tab-btn" id="btn-c3modo-fator" onclick="setC3Modo('fator')">Por fator<br>(ex.: 3,5x)</button>
+        </div>
+      </div>
+
+      <div class="field" id="c3_field_pct">
+        <label>Markup desejado (% sobre o custo)</label>
+        <div class="input-row pct">
+          <input type="number" id="c3_markup" step="0.1" placeholder="Digite aqui" oninput="calc3()"><span class="prefix">%</span>
+        </div>
+      </div>
+      <div class="field hidden" id="c3_field_fator">
+        <label>Markup desejado (fator multiplicador sobre o custo)</label>
+        <div class="input-row">
+          <input type="number" id="c3_fator_in" step="0.01" placeholder="Ex.: 3,5" oninput="calc3()"><span class="prefix" style="left:auto;right:16px;">x</span>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="res-row hl"><span>Preço de venda sugerido</span><span class="val" id="c3_venda">–</span></div>
+        <div class="res-row"><span>Lucro bruto (R$)</span><span class="val" id="c3_lucro">–</span></div>
+        <div class="res-row"><span>Margem de lucro equivalente (% sobre venda)</span><span class="val" id="c3_margem">–</span></div>
+        <div class="res-row"><span>Multiplicador (fator sobre custo)</span><span class="val" id="c3_fator">–</span></div>
+      </div>
+      <div class="note">
+        Preço de Venda = Custo × (1 + Markup%) ou Preço de Venda = Custo × Fator. O markup incide sobre o <b>custo</b>, não sobre a venda — por isso markup e margem sempre resultam em números diferentes para o mesmo produto.
+      </div>
+    </div>
+  </div>
+
+  <!-- CENÁRIO 4 -->
+  <div id="tab4" class="hidden">
+    <div class="card">
+      <h2>🍕 Formação de CMV (produto composto)</h2>
+      <div id="ing-list"></div>
+      <button class="add-btn" onclick="addIngrediente()">+ Adicionar ingrediente</button>
+      <div class="subtotal-line"><span>CMV total (soma dos itens)</span><span class="val" id="c4_cmv">R$ 0,00</span></div>
+    </div>
+
+    <div class="card">
+      <h2>⚖️ Rateio de Custos e Margem</h2>
+      <div class="field">
+        <label>Custo fixo rateado (R$ por unidade produzida)</label>
+        <div class="input-row"><span class="prefix">R$</span>
+          <input type="number" id="c4_fixo" step="0.01" placeholder="Digite aqui" oninput="calc4()">
+        </div>
+        <div class="note" style="margin-top:6px;">Ex.: aluguel, energia, mão de obra fixa ÷ nº de unidades produzidas no período.</div>
+      </div>
+      <div class="field">
+        <label>Custos variáveis (% sobre o preço de venda)</label>
+        <div class="input-row pct">
+          <input type="number" id="c4_var" step="0.1" placeholder="Digite aqui" oninput="calc4()"><span class="prefix">%</span>
+        </div>
+        <div class="note" style="margin-top:6px;">Ex.: impostos, taxa de cartão/maquininha, comissão de venda, embalagem variável.</div>
+      </div>
+      <div class="field">
+        <label>Margem de lucro desejada (% sobre o preço de venda)</label>
+        <div class="input-row pct">
+          <input type="number" id="c4_margem" step="0.1" placeholder="Digite aqui" oninput="calc4()"><span class="prefix">%</span>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="res-row"><span>CMV (custo dos ingredientes)</span><span class="val" id="c4_res_cmv">–</span></div>
+        <div class="res-row"><span>+ Custo fixo rateado</span><span class="val" id="c4_res_fixo">–</span></div>
+        <div class="res-row"><span>Custo total do produto</span><span class="val" id="c4_res_custototal">–</span></div>
+        <div class="res-row hl"><span>Preço de venda sugerido</span><span class="val" id="c4_res_venda">–</span></div>
+        <div class="res-row"><span>Lucro líquido (R$)</span><span class="val" id="c4_res_lucro">–</span></div>
+        <div class="res-row"><span>Markup sobre o custo total</span><span class="val" id="c4_res_markup">–</span></div>
+        <div class="res-row" id="c4_alerta_row" style="display:none;"><span>Situação</span><span class="val"><span class="badge bad" id="c4_alerta"></span></span></div>
+      </div>
+      <div class="note">
+        Preço de Venda = (CMV + Custo Fixo) ÷ (1 − %Variáveis − %Margem). Fórmula de precificação completa: o preço precisa cobrir o custo do produto, os custos variáveis que incidem sobre a venda (impostos, taxas) e ainda deixar a margem de lucro líquida desejada.
+      </div>
+    </div>
+  </div>
+
+  <footer>Máxima Mentoria Empresarial — ferramenta de uso interno</footer>
+</div>
+
+<script>
+function fmtR(v){ return isFinite(v) ? 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '–'; }
+function fmtP(v){ return isFinite(v) ? v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) + '%' : '–'; }
+
+function showTab(n){
+  [1,2,3,4].forEach(i=>{
+    document.getElementById('tab'+i).classList.toggle('hidden', n!==i);
+    document.getElementById('btn-c'+i).classList.toggle('active', n===i);
+  });
+}
+
+let c1FixoModo = 'rs';
+function setC1FixoModo(modo){
+  c1FixoModo = modo;
+  document.getElementById('btn-c1fixomodo-rs').classList.toggle('active', modo==='rs');
+  document.getElementById('btn-c1fixomodo-pct').classList.toggle('active', modo==='pct');
+  document.getElementById('c1_fixo_field_rs').classList.toggle('hidden', modo!=='rs');
+  document.getElementById('c1_fixo_field_pct').classList.toggle('hidden', modo!=='pct');
+  calc1();
+}
+
+function calc1(){
+  const custo = parseFloat(document.getElementById('c1_custo').value) || 0;
+  const venda = parseFloat(document.getElementById('c1_venda').value) || 0;
+  let fixo;
+  if (c1FixoModo === 'rs'){
+    fixo = parseFloat(document.getElementById('c1_fixo').value) || 0;
+  } else {
+    const fixoPct = parseFloat(document.getElementById('c1_fixo_pct').value) || 0;
+    fixo = venda * fixoPct/100;
+  }
+  const varPct = parseFloat(document.getElementById('c1_var').value) || 0;
+
+  const lucro = venda - custo;
+  const margem = venda > 0 ? (lucro/venda)*100 : NaN;
+  const markup = custo > 0 ? (lucro/custo)*100 : NaN;
+  const fator = custo > 0 ? venda/custo : NaN;
+  const lucroLiq = lucro - fixo - (venda*varPct/100);
+  const margemLiq = venda > 0 ? (lucroLiq/venda)*100 : NaN;
+
+  document.getElementById('c1_lucro').textContent = fmtR(lucro);
+  document.getElementById('c1_margem').textContent = fmtP(margem);
+  document.getElementById('c1_markup').textContent = fmtP(markup);
+  document.getElementById('c1_fator').textContent = isFinite(fator) ? fator.toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3}) + 'x' : '–';
+  document.getElementById('c1_lucroliq').textContent = fmtR(lucroLiq);
+  document.getElementById('c1_margemliq').textContent = fmtP(margemLiq);
+}
+
+function calc2(){
+  const custo = parseFloat(document.getElementById('c2_custo').value) || 0;
+  let margem = parseFloat(document.getElementById('c2_margem').value);
+  if (isNaN(margem)) margem = 0;
+  const margemFrac = margem/100;
+
+  const alertaRow = document.getElementById('c2_alerta_row');
+  const alerta = document.getElementById('c2_alerta');
+
+  if (margemFrac >= 1){
+    document.getElementById('c2_venda').textContent = '–';
+    document.getElementById('c2_lucro').textContent = '–';
+    document.getElementById('c2_markup').textContent = '–';
+    alertaRow.style.display='flex';
+    alerta.textContent = 'Margem ≥ 100% é inválida';
+    alerta.className = 'badge bad';
+    return;
+  }
+
+  const venda = custo / (1 - margemFrac);
+  const lucro = venda - custo;
+  const markup = custo > 0 ? (lucro/custo)*100 : NaN;
+
+  document.getElementById('c2_venda').textContent = fmtR(venda);
+  document.getElementById('c2_lucro').textContent = fmtR(lucro);
+  document.getElementById('c2_markup').textContent = fmtP(markup);
+
+  if (margem < 0){
+    alertaRow.style.display='flex';
+    alerta.textContent = 'Margem negativa (prejuízo)';
+    alerta.className = 'badge bad';
+  } else if (margem > 70){
+    alertaRow.style.display='flex';
+    alerta.textContent = 'Margem muito alta — checar mercado';
+    alerta.className = 'badge bad';
+  } else {
+    alertaRow.style.display='flex';
+    alerta.textContent = 'Margem dentro de faixa usual';
+    alerta.className = 'badge good';
+  }
+}
+
+let c3Modo = 'pct';
+function setC3Modo(modo){
+  c3Modo = modo;
+  document.getElementById('btn-c3modo-pct').classList.toggle('active', modo==='pct');
+  document.getElementById('btn-c3modo-fator').classList.toggle('active', modo==='fator');
+  document.getElementById('c3_field_pct').classList.toggle('hidden', modo!=='pct');
+  document.getElementById('c3_field_fator').classList.toggle('hidden', modo!=='fator');
+  calc3();
+}
+
+function calc3(){
+  const custo = parseFloat(document.getElementById('c3_custo').value) || 0;
+  let venda;
+
+  if (c3Modo === 'pct'){
+    let markup = parseFloat(document.getElementById('c3_markup').value);
+    if (isNaN(markup)) markup = 0;
+    venda = custo * (1 + markup/100);
+  } else {
+    let fatorIn = parseFloat(document.getElementById('c3_fator_in').value);
+    if (isNaN(fatorIn)) fatorIn = 0;
+    venda = custo * fatorIn;
+  }
+
+  const lucro = venda - custo;
+  const margem = venda > 0 ? (lucro/venda)*100 : NaN;
+  const fator = custo > 0 ? venda/custo : NaN;
+
+  document.getElementById('c3_venda').textContent = fmtR(venda);
+  document.getElementById('c3_lucro').textContent = fmtR(lucro);
+  document.getElementById('c3_margem').textContent = fmtP(margem);
+  document.getElementById('c3_fator').textContent = isFinite(fator) ? fator.toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3}) + 'x' : '–';
+}
+
+/* ===== Cenário 4: CMV composto ===== */
+let ingCount = 0;
+function addIngrediente(){
+  ingCount++;
+  const id = ingCount;
+  const list = document.getElementById('ing-list');
+  const div = document.createElement('div');
+  div.className = 'ing-card';
+  div.id = 'ing-card-'+id;
+  div.innerHTML = `
+    <button class="rm-btn" onclick="removeIngrediente(${id})">✕</button>
+    <div class="ing-head"><span>Ingrediente ${id}</span></div>
+    <input type="text" id="ing-nome-${id}" placeholder="Nome do ingrediente — digite aqui" oninput="calc4()">
+    <div class="ing-grid ing-grid-3">
+      <div class="gf">
+        <label>Qtd. na embalagem</label>
+        <input type="number" step="0.01" id="ing-qtdemb-${id}" placeholder="Digite aqui" oninput="calc4()">
+      </div>
+      <div class="gf">
+        <label>Unidade</label>
+        <select id="ing-un-${id}" onchange="calc4()">
+          <option value="un">un</option>
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="l">l</option>
+          <option value="ml">ml</option>
+          <option value="cx">cx</option>
+          <option value="pct">pct</option>
+          <option value="fatia">fatia</option>
+          <option value="dz">dz</option>
+        </select>
+      </div>
+      <div class="gf">
+        <label>Valor da embalagem (R$)</label>
+        <input type="number" step="0.01" id="ing-valemb-${id}" placeholder="Digite aqui" oninput="calc4()">
+      </div>
+      <div class="gf">
+        <label>Qtd. utilizada na receita</label>
+        <input type="number" step="0.01" id="ing-qtduso-${id}" placeholder="Digite aqui" oninput="calc4()">
+      </div>
+      <div class="gf">
+        <label>Custo unitário (R$)</label>
+        <input type="text" value="" id="ing-cu-${id}" disabled placeholder="Auto">
+      </div>
+    </div>
+    <div class="ing-sub-line"><span>Subtotal deste ingrediente <span id="ing-un-label-${id}" style="opacity:.7;"></span></span><span class="val" id="ing-sub-${id}">R$ 0,00</span></div>
+  `;
+  list.appendChild(div);
+  calc4();
+}
+function removeIngrediente(id){
+  const card = document.getElementById('ing-card-'+id);
+  if(card) card.remove();
+  calc4();
+}
+
+function calc4(){
+  const list = document.getElementById('ing-list');
+  let cmv = 0;
+  list.querySelectorAll('.ing-card').forEach(card=>{
+    const id = card.id.replace('ing-card-','');
+    const qtdEmb = parseFloat(document.getElementById('ing-qtdemb-'+id).value) || 0;
+    const valEmb = parseFloat(document.getElementById('ing-valemb-'+id).value) || 0;
+    const qtdUso = parseFloat(document.getElementById('ing-qtduso-'+id).value) || 0;
+    const unidade = document.getElementById('ing-un-'+id).value;
+    const custoUnit = qtdEmb > 0 ? valEmb/qtdEmb : 0;
+    const sub = custoUnit * qtdUso;
+    document.getElementById('ing-cu-'+id).value = custoUnit ? custoUnit.toLocaleString('pt-BR',{minimumFractionDigits:4,maximumFractionDigits:4}) + '/' + unidade : '';
+    document.getElementById('ing-un-label-'+id).textContent = qtdUso ? '(' + qtdUso.toLocaleString('pt-BR') + ' ' + unidade + ')' : '';
+    document.getElementById('ing-sub-'+id).textContent = fmtR(sub);
+    cmv += sub;
+  });
+  document.getElementById('c4_cmv').textContent = fmtR(cmv);
+
+  const fixo = parseFloat(document.getElementById('c4_fixo').value) || 0;
+  let varPct = parseFloat(document.getElementById('c4_var').value);
+  if (isNaN(varPct)) varPct = 0;
+  let margemPct = parseFloat(document.getElementById('c4_margem').value);
+  if (isNaN(margemPct)) margemPct = 0;
+
+  const custoTotal = cmv + fixo;
+  const divisor = 1 - (varPct/100) - (margemPct/100);
+
+  document.getElementById('c4_res_cmv').textContent = fmtR(cmv);
+  document.getElementById('c4_res_fixo').textContent = fmtR(fixo);
+  document.getElementById('c4_res_custototal').textContent = fmtR(custoTotal);
+
+  const alertaRow = document.getElementById('c4_alerta_row');
+  const alerta = document.getElementById('c4_alerta');
+
+  if (divisor <= 0){
+    document.getElementById('c4_res_venda').textContent = '–';
+    document.getElementById('c4_res_lucro').textContent = '–';
+    document.getElementById('c4_res_markup').textContent = '–';
+    alertaRow.style.display='flex';
+    alerta.textContent = '%Variáveis + %Margem ≥ 100% — inviável';
+    alerta.className = 'badge bad';
+    return;
+  }
+
+  const venda = custoTotal / divisor;
+  const lucro = venda - custoTotal - (venda*varPct/100);
+  const markup = custoTotal > 0 ? ((venda-custoTotal)/custoTotal)*100 : NaN;
+
+  document.getElementById('c4_res_venda').textContent = fmtR(venda);
+  document.getElementById('c4_res_lucro').textContent = fmtR(lucro);
+  document.getElementById('c4_res_markup').textContent = fmtP(markup);
+
+  if (margemPct <= 0){
+    alertaRow.style.display='flex';
+    alerta.textContent = 'Sem margem positiva definida';
+    alerta.className = 'badge bad';
+  } else {
+    alertaRow.style.display='flex';
+    alerta.textContent = 'Cálculo consistente';
+    alerta.className = 'badge good';
+  }
+}
+
+calc1();
+calc2();
+calc3();
+addIngrediente();
+</script>
+</body>
+</html>
