@@ -272,15 +272,28 @@
           <input type="number" id="c2_margem" step="0.1" placeholder="Digite aqui" oninput="calc2()"><span class="prefix">%</span>
         </div>
       </div>
+      <div class="field">
+        <label>Despesas fixas (% sobre a venda)</label>
+        <div class="input-row pct">
+          <input type="number" id="c2_desp" step="0.1" placeholder="Digite aqui" oninput="calc2()"><span class="prefix">%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Despesas variáveis (% sobre a venda)</label>
+        <div class="input-row pct">
+          <input type="number" id="c2_var" step="0.1" placeholder="Digite aqui" oninput="calc2()"><span class="prefix">%</span>
+        </div>
+      </div>
 
       <div class="results">
         <div class="res-row hl"><span>Preço de venda sugerido</span><span class="val" id="c2_venda">–</span></div>
         <div class="res-row"><span>Lucro bruto (R$)</span><span class="val" id="c2_lucro">–</span></div>
+        <div class="res-row"><span>Despesas fixas + variáveis (R$)</span><span class="val" id="c2_despval">–</span></div>
         <div class="res-row"><span>Markup equivalente (% sobre custo)</span><span class="val" id="c2_markup">–</span></div>
         <div class="res-row" id="c2_alerta_row" style="display:none;"><span>Situação</span><span class="val"><span class="badge bad" id="c2_alerta"></span></span></div>
       </div>
       <div class="note">
-        Preço de Venda = Custo ÷ (1 − Margem). Fórmula usada para partir de um custo e de uma margem-alvo e chegar no preço final de tabela.
+        Preço de Venda = Custo ÷ (1 − Margem − %Despesas fixas − %Despesas variáveis). Todos os percentuais incidem sobre o preço de venda. Campos de despesas em branco são tratados como 0%. O lucro bruto exibido é o que sobra do preço após o custo; a margem informada é o lucro líquido após as despesas.
       </div>
     </div>
   </div>
@@ -431,27 +444,29 @@ function calc2(){
   const custo = parseFloat(document.getElementById('c2_custo').value) || 0;
   let margem = parseFloat(document.getElementById('c2_margem').value);
   if (isNaN(margem)) margem = 0;
-  const margemFrac = margem/100;
+  const desp = parseFloat(document.getElementById('c2_desp').value) || 0;
+  const varPct = parseFloat(document.getElementById('c2_var').value) || 0;
+  const divisor = 1 - (margem + desp + varPct)/100;
 
   const alertaRow = document.getElementById('c2_alerta_row');
   const alerta = document.getElementById('c2_alerta');
 
-  if (margemFrac >= 1){
-    document.getElementById('c2_venda').textContent = '–';
-    document.getElementById('c2_lucro').textContent = '–';
-    document.getElementById('c2_markup').textContent = '–';
+  if (divisor <= 0){
+    ['c2_venda','c2_lucro','c2_despval','c2_markup'].forEach(id=>document.getElementById(id).textContent='–');
     alertaRow.style.display='flex';
-    alerta.textContent = 'Margem ≥ 100% é inválida';
+    alerta.textContent = 'Margem + despesas ≥ 100% é inválido';
     alerta.className = 'badge bad';
     return;
   }
 
-  const venda = custo / (1 - margemFrac);
+  const venda = custo / divisor;
   const lucro = venda - custo;
+  const despVal = venda * (desp + varPct)/100;
   const markup = custo > 0 ? (lucro/custo)*100 : NaN;
 
   document.getElementById('c2_venda').textContent = fmtR(venda);
   document.getElementById('c2_lucro').textContent = fmtR(lucro);
+  document.getElementById('c2_despval').textContent = fmtR(despVal);
   document.getElementById('c2_markup').textContent = fmtP(markup);
 
   if (margem < 0){
